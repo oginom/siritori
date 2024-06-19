@@ -12,5 +12,5 @@ gcloud run deploy $FUNCTION_NAME \
     --region $REGION \
     --allow-unauthenticated \
     --port 3000 \
-    --memory 1Gi \
+    --memory 512Mi \
     --set-env-vars "OPENAI_API_KEY=$OPENAI_API_KEY"

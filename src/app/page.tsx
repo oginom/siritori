@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 
@@ -62,10 +62,7 @@ const kanaMap: { [key: string]: string } = (() => {
     "ばびぶべぼ",
     "ぱぴぷぺぽ",
   ].join("");
-  const map: { [key: string]: string } = {};
-  for (let i = 0; i < kana.length; i++) {
-    map[kana[i]] = kana[i];
-  }
+  const map: { [key: string]: string } = kana.split("").reduce((acc, c) => ({ ...acc, [c]: c }), {});
   const slMap = {
     "ぁ": "あ",
     "ぃ": "い",
@@ -81,12 +78,42 @@ const kanaMap: { [key: string]: string } = (() => {
 })();
 
 
+const hyphenMap: { [key: string]: string } = {
+  ..."あかさたなはまやらわがざだばぱぁゃ".split("").reduce((acc, c) => ({ ...acc, [c]: "あ" }), {}),
+  ..."いきしちにひみりぎじぢびぴぃ".split("").reduce((acc, c) => ({ ...acc, [c]: "い" }), {}),
+  ..."うくすつぬふむゆるぐずづぶぷぅゅ".split("").reduce((acc, c) => ({ ...acc, [c]: "う" }), {}),
+  ..."えけせてねへめれげぜでべぺぇ".split("").reduce((acc, c) => ({ ...acc, [c]: "え" }), {}),
+  ..."おこそとのほもよろをごぞどぼぽぉょ".split("").reduce((acc, c) => ({ ...acc, [c]: "お" }), {}),
+};
+
+
+function getNext(text: string): string | null {
+  if (text == "") {
+    return null;
+  }
+  if (kanaMap[text[text.length - 1]] !== undefined) {
+    return kanaMap[text[text.length - 1]];
+  }
+  if (text.length > 1 && text[text.length - 1] === "ー") {
+    if (hyphenMap[text[text.length - 2]] !== undefined) {
+      return hyphenMap[text[text.length - 2]];
+    }
+  }
+  return null;
+}
+
+
 export default function Home() {
   const [image, setImage] = useState<string | null>(null);
   const [resizedImage, setResizedImage] = useState<string | null>(null);
   const [result, setResult] = useState<string>("");
-  const [start, setStart] = useState<string>("あ");
+  const [start, setStart] = useState<string>("");
   const [siris, setSiris] = useState<Siri[]>([]);
+
+  // Initialize start
+  useEffect(() => {
+    setStart(Object.values(kanaMap)[Math.floor(Math.random() * Object.keys(kanaMap).length)]);
+  }, []);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -110,29 +137,29 @@ export default function Home() {
       setResult(text);
       return;
     }
-    const end = text[text.length - 1];
-    if (kanaMap[end] === undefined) {
+    const next = getNext(text);
+    if (next === null) {
       setResult(text);
       return;
     }
 
-    setStart(kanaMap[end]);
+    setStart(next);
     setSiris(siris => [...siris, { image: image as string, text: text }]);
     setImage(null);
     setResizedImage(null);
+    setResult("");
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const prompt = `これは何ですか？必ずひらがなで答えの言葉だけ返してください。\n複数の候補がある場合は、「${start}」から始まる言葉を考えてください。無い場合は他の文字から始まってもかまいません。`;
+    const prompt = `これは何ですか？必ずひらがなで答えの言葉だけ返してください。\n句読点や記号は不要です。\n複数の候補がある場合は、「${start}」から始まる言葉を考えてください。無い場合は他の文字から始まってもかまいません。\n例: とろふぃー りんご じゃーじ`;
     const response = await axios.post("/api/openai", { prompt, image: resizedImage });
     const text = response.data.result;
     if (text) {
       processText(text);
     }
     if (imageInputRef?.current) {
-      console.log("set value to empty")
       imageInputRef.current.value = "";
     }
   };
@@ -153,7 +180,7 @@ export default function Home() {
         つぎ: 「{start}」
       </div>
       <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleImageUpload} ref={imageInputRef}/>
+        <input type="file" accept="image/*" onChange={handleImageUpload} ref={imageInputRef}/>
         <button type="submit">送信！</button>
       </form>
       {image && <img src={image} width="50%"/>}
