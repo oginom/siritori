@@ -2,7 +2,18 @@
 
 しり撮り
 
+(語感がアレだけど、写真でしりとりのことです)
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+## run with Docker
+
+```sh
+IMAGE=siritori
+docker build -t $IMAGE .
+docker run --rm -it -p 3000:3000 --env-file ./.env.local --name siritori $IMAGE
+```
+
 
 ## Getting Started
 
