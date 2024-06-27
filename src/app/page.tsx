@@ -129,6 +129,7 @@ export default function Home() {
           setResizedImage(resizedImage);
           setResult("");
         });
+        setSending(false);
       };
       reader.readAsDataURL(file);
     }
