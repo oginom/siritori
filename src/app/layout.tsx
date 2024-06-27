@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
-        <AppBar color="secondary" position="static">
+        <AppBar position="static">
           <Typography variant="h1" fontSize={20} align="center" m={1}>
             {TITLE}
           </Typography>
