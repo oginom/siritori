@@ -20,7 +20,7 @@ COPY pnpm*.yaml ./
 RUN npm install -g pnpm
 RUN pnpm install --prod
 COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
+#COPY --from=build /app/public ./public
 
 # 環境変数
 ENV NODE_ENV production
