@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import { Button, ImageList, ImageListItem, ImageListItemBar, Stack, Typography } from "@mui/material";
 
 
 const MAX_IMAGE_SIZE = 256;
@@ -116,6 +117,7 @@ export default function Home() {
   }, []);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [sending, setSending] = useState<boolean>(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -148,9 +150,12 @@ export default function Home() {
     setImage(null);
     setResizedImage(null);
     setResult("");
+    window.scrollTo(0, document.body.scrollHeight);
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setSending(true);
+    setResult("");
     e.preventDefault();
 
     const prompt = `これは何ですか？必ずひらがなで答えの言葉だけ返してください。\n句読点や記号は不要です。\n複数の候補がある場合は、「${start}」から始まる言葉を考えてください。無い場合は他の文字から始まってもかまいません。\n例: とろふぃー りんご じゃーじ`;
@@ -162,31 +167,31 @@ export default function Home() {
     if (imageInputRef?.current) {
       imageInputRef.current.value = "";
     }
+    setSending(false);
   };
 
   return (
     <div>
-      {siris.map((siri, i) => (
-        <div key={i}>
-          <div>
-            <img src={siri.image} width="50%"/>
-          </div>
-          <div>
-            {siri.text}
-          </div>
-        </div>
-      ))}
-      <div>
+      <ImageList cols={2}>
+        {siris.map((siri, i) => (
+          <ImageListItem key={i}>
+            <img src={siri.image} width="100%"/>
+            <ImageListItemBar title={siri.text} />
+          </ImageListItem>
+        ))}
+      </ImageList>
+      <Typography variant="h6" align="center" m={2}>
         つぎ: 「{start}」
-      </div>
+      </Typography>
       <form onSubmit={handleSubmit}>
-        <input type="file" accept="image/*" onChange={handleImageUpload} ref={imageInputRef}/>
-        <button type="submit">送信！</button>
+        <Stack direction="column" spacing={2} alignItems="center">
+          {image && <img src={image} width="50%"/>}
+          <div>{result ?? "&nbsp;"}</div>
+          <Button onClick={() => {imageInputRef.current?.click()}} variant="outlined" fullWidth>画像を選択</Button>
+          <input style={{display: "none"}} type="file" accept="image/*" onChange={handleImageUpload} ref={imageInputRef}/>
+          <Button disabled={!image || sending} type="submit" variant="contained" fullWidth>送信！</Button>
+        </Stack>
       </form>
-      {image && <img src={image} width="50%"/>}
-      {result && (
-        <div>{result}</div>
-      )}
     </div>
   );
 }
