@@ -1,5 +1,6 @@
 # dockerignore
 
+doc
 node_modules
 .next
 .git

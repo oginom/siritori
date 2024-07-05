@@ -1,6 +1,8 @@
 # siritori
 
-しり撮り
+[しり撮り](https://siritori.emuogi.com)
+
+![](doc/images/screenshot.png)
 
 (語感がアレだけど、写真でしりとりのことです)
 
